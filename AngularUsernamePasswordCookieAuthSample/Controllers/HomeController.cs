@@ -1,30 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Diagnostics;
 using AngularUsernamePasswordCookieAuthSample.Models;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AngularUsernamePasswordCookieAuthSample.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public IActionResult Index([FromServices] IAntiforgery antiforgery)
         {
-            return View();
-        }
-
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
+            // We can send the request token as a JavaScript-readable cookie, and Angular will use it by default.
+            var tokens = antiforgery.GetAndStoreTokens(HttpContext);
+            HttpContext.Response.Cookies.Append(
+                "XSRF-TOKEN",
+                tokens.RequestToken,
+                new CookieOptions() { HttpOnly = false, SameSite = SameSiteMode.Lax });
 
             return View();
         }
